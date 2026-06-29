@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FitGPT
 
-## Getting Started
+FitGPT is an AI-powered fitness assistant built with Next.js, OpenAI, and Astra DB. The app lets users chat with a fitness-focused coach, while the backend retrieves relevant context from a vector database to improve the quality of responses.
 
-First, run the development server:
+## Features
+
+- Conversational fitness coaching experience in the browser
+- Prompt suggestions for quick starting points
+- Retrieval-augmented generation (RAG) using Astra DB and embeddings
+- Content seeding script that scrapes and stores fitness-related text for retrieval
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- OpenAI API
+- Vercel AI SDK
+- LangChain
+- DataStax Astra DB
+- Puppeteer
+
+## Prerequisites
+
+Before running the project, make sure you have:
+
+- Node.js 18 or newer
+- npm
+- An OpenAI API key
+- A DataStax Astra DB account with namespace, endpoint, and application token
+
+## Environment Variables
+
+Create a file named .env.local in the project root and add the following variables:
+
+```bash
+ASTRA_DB_NAMESPACE=your_astra_namespace
+ASTRA_DB_COLLECTION=your_collection_name
+ASTRA_DB_API_ENDPOINT=your_astra_endpoint
+ASTRA_DB_APPLICATION_TOKEN=your_astra_token
+OPENAI_API_KEY=your_openai_api_key
+```
+
+## Installation
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Seed the vector database with sample content:
+
+```bash
+npm run seed
+```
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 to view the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- app/page.tsx: Main chat UI
+- app/api/chat/route.ts: Handles chat requests and retrieves relevant context
+- scripts/loadDb.ts: Scrapes content, splits it into chunks, creates embeddings, and stores them in Astra DB
+- app/components: Reusable chat UI components
 
-## Learn More
+## Build
 
-To learn more about Next.js, take a look at the following resources:
+To create a production build:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- The seed script currently uses a small set of fitness-related pages and can be expanded with your own sources.
+- The app uses OpenAI embeddings and chat completions to generate responses grounded by retrieved context.

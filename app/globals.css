@@ -1,26 +1,303 @@
-@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+/* ── Reset & Base ─────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-primary: #212121;
+  --bg-secondary: #2f2f2f;
+  --bg-bubble-user: #2f2f2f;
+  --bg-bubble-ai: #212121;
+  --bg-input: #2f2f2f;
+  --bg-btn: #3a3a3a;
+  --bg-btn-hover: #4a4a4a;
+
+  --text-primary: #ececec;
+  --text-secondary: #8e8ea0;
+  --text-placeholder: #6e6e80;
+
+  --border: #3f3f3f;
+  --accent: #10a37f;
+  --accent-hover: #0e8f6f;
+  --radius: 12px;
+  --radius-bubble: 18px;
+  --font: "Inter", system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  height: 100%;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ── Layout ───────────────────────────────────────────────── */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: 24px 16px 0;
+}
+
+main img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Chat sections ────────────────────────────────────────── */
+section {
+  width: 100%;
+  max-width: 720px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Empty state */
+section.empty {
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+/* Populated (messages) state */
+section.populated {
+  justify-content: flex-start;
+  padding-bottom: 120px; /* leave room for the pinned input */
+  overflow-y: auto;
+  gap: 4px;
+}
+
+/* ── Starter text ─────────────────────────────────────────── */
+.starter-text {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+/* ── Prompt suggestion row ────────────────────────────────── */
+.prompt-suggestion-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.prompt-suggestion-button {
+  padding: 9px 16px;
+  background: var(--bg-btn);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.prompt-suggestion-button:hover {
+  background: var(--bg-btn-hover);
+  color: var(--text-primary);
+  border-color: #5a5a5a;
+}
+
+/* ── Chat bubbles ─────────────────────────────────────────── */
+.assistant.bubble,
+.user.bubble {
+  display: flex;
+  max-width: 85%;
+  padding: 12px 18px;
+  border-radius: var(--radius-bubble);
+  font-size: 0.93rem;
+  line-height: 1.65;
+  margin: 4px 0;
+  word-break: break-word;
+}
+
+.user.bubble {
+  align-self: flex-end;
+  background: var(--bg-bubble-user);
+  color: var(--text-primary);
+  border-bottom-right-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.assistant.bubble {
+  align-self: flex-start;
+  background: transparent;
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
+  padding-left: 4px;
+}
+
+/* ── Loading bubble (3-dot bounce) ───────────────────────── */
+.loader {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 4px;
+  align-self: flex-start;
+}
+
+.loader::before,
+.loader::after,
+.loader {
+  content: "";
+}
+
+/* Three dots via a single div with box-shadows */
+.loader {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  animation: bounce 1.2s infinite ease-in-out;
+  animation-delay: 0s;
+  box-shadow:
+    16px 0 0 var(--text-secondary),
+    32px 0 0 var(--text-secondary);
+  margin-left: 4px;
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
+/* Give the two shadow-dots their own delays */
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-6px);
+    opacity: 1;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.loader {
+  animation-delay: 0s;
+}
+/* Pseudo-elements can't animate box-shadows independently,
+   so we replicate with a wrapper trick */
+.loader::before {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  left: 16px;
+  animation: bounce 1.2s infinite ease-in-out;
+  animation-delay: 0.2s;
+}
+
+.loader::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  left: 32px;
+  animation: bounce 1.2s infinite ease-in-out;
+  animation-delay: 0.4s;
+}
+
+/* Reset the box-shadow trick so pseudo-elements do the heavy lifting */
+.loader {
+  box-shadow: none;
+}
+
+/* ── Input bar ────────────────────────────────────────────── */
+form {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 752px;
+  padding: 12px 16px 20px;
+  background: linear-gradient(
+    to top,
+    var(--bg-primary) 70%,
+    transparent
+  );
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.question-box {
+  flex: 1;
+  resize: none;
+  padding: 14px 18px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 0.93rem;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.question-box::placeholder {
+  color: var(--text-placeholder);
+}
+
+.question-box:focus {
+  border-color: var(--accent);
+}
+
+/* Submit button (the hidden <input type="submit"> becomes visible) */
+input[type="submit"] {
+  padding: 0 18px;
+  height: 48px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+input[type="submit"]:hover {
+  background: var(--accent-hover);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
 }
