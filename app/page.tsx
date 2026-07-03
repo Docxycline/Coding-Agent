@@ -11,14 +11,12 @@ const HomePage = () => {
   const { append, messages, isLoading, input, handleInputChange, handleSubmit } = useChat()
   const noMessages = !messages || messages.length === 0
 
-  const handlePrompt = (promptText) => {
-    const msg = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: promptText
-    }
-    append(msg)
-  }
+const handlePrompt = (promptText: string) => {
+  append({
+    role: "user",
+    content: promptText
+  })
+}
 
   return (
     <main>
