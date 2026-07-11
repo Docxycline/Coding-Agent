@@ -10,7 +10,7 @@
 }
 
 :root {
-  --bg-primary: #212121;
+  --bg-primary: #1E1D1E;
   --bg-secondary: #2f2f2f;
   --bg-bubble-user: #2f2f2f;
   --bg-bubble-ai: #212121;
@@ -22,9 +22,9 @@
   --text-secondary: #8e8ea0;
   --text-placeholder: #6e6e80;
 
-  --border: #3f3f3f;
-  --accent: #10a37f;
-  --accent-hover: #0e8f6f;
+  --border: #B9941B;
+  --accent: #B9941B;
+  --accent-hover: #e6ba27;
   --radius: 12px;
   --radius-bubble: 18px;
   --font: "Inter", system-ui, sans-serif;
