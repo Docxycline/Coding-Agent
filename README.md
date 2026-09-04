@@ -1,84 +1,150 @@
-# FitGPT
+# Qinser — AI Coding Agent
 
-FitGPT is an AI-powered fitness assistant built with Next.js, OpenAI, and Astra DB. The app lets users chat with a fitness-focused coach, while the backend retrieves relevant context from a vector database to improve the quality of responses.
+Qinser is a full-stack AI coding agent built with Next.js, LangGraph, and Groq. It can read, write, edit, and execute files on your local machine through a chat interface, with persistent memory across sessions powered by PostgreSQL.
+
+## Demo
+
+> Ask Qinser to read a file, search your codebase, run a command, or write new code — it uses real tools that execute on your machine.
 
 ## Features
 
-- Conversational fitness coaching experience in the browser
-- Prompt suggestions for quick starting points
-- Retrieval-augmented generation (RAG) using Astra DB and embeddings
-- Content seeding script that scrapes and stores fitness-related text for retrieval
+- **Local file system access** — read, write, edit files directly on your machine
+- **Terminal execution** — run any command and see the output
+- **Codebase search** — find any string across all files in a directory
+- **Persistent memory** — conversations are saved to PostgreSQL and remembered across sessions
+- **Streaming responses** — word-by-word streaming just like ChatGPT
+- **ReAct loop** — agent reasons, acts with tools, observes results, and repeats until done
 
 ## Tech Stack
 
-- Next.js 16
-- React 19
-- TypeScript
-- OpenAI API
-- Vercel AI SDK
-- LangChain
-- DataStax Astra DB
-- Puppeteer
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js 16, TypeScript, Tailwind CSS |
+| AI Framework | LangGraph (ReAct agent loop) |
+| LLM | Groq — llama-3.3-70b-versatile |
+| Memory | PostgreSQL via Neon + LangGraph PostgresSaver |
+| Tools | Custom filesystem + shell tools |
+| Streaming | Vercel AI SDK |
 
-## Prerequisites
+## Architecture
 
-Before running the project, make sure you have:
-
-- Node.js 18 or newer
-- npm
-- An OpenAI API key
-- A DataStax Astra DB account with namespace, endpoint, and application token
-
-## Environment Variables
-
-Create a file named .env.local in the project root and add the following variables:
-
-```bash
-ASTRA_DB_NAMESPACE=your_astra_namespace
-ASTRA_DB_COLLECTION=your_collection_name
-ASTRA_DB_API_ENDPOINT=your_astra_endpoint
-ASTRA_DB_APPLICATION_TOKEN=your_astra_token
-OPENAI_API_KEY=your_openai_api_key
+```
+User message
+     ↓
+Next.js API Route (route.ts)
+     ↓
+LangGraph StateGraph
+     ↓
+Agent Node (LLM decides what to do)
+     ↓
+shouldContinue() — needs a tool?
+     ↓ yes                    ↓ no
+Tool Node                  Stream response
+(executes tool)            back to user
+     ↓
+Back to Agent Node
+(loop until done)
 ```
 
-## Installation
+**Persistent memory flow:**
+Every conversation has a `thread_id` stored in localStorage. On each request, LangGraph loads the full conversation history from Neon Postgres using that ID, runs the agent, and saves the updated state back.
 
-Install dependencies:
+## Tools
+
+| Tool | Description |
+|---|---|
+| `read_file` | Read the contents of any file |
+| `write_file` | Create or overwrite a file |
+| `edit_file` | Make targeted edits to specific content |
+| `execute_code` | Run terminal commands and return output |
+| `list_directory` | List files and folders in a directory |
+| `search_in_files` | Search for any string across files recursively |
+
+All tools have safety guards — blocked paths (`node_modules`, `.git`, `.env`) and blocked commands (`rm -rf`, `git push`, etc).
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- A [Groq](https://console.groq.com) account (free)
+- A [Neon](https://neon.tech) account (free)
+
+### Installation
 
 ```bash
+git clone https://github.com/yourusername/qinser
+cd qinser/app
 npm install
 ```
 
-Seed the vector database with sample content:
+### Environment Variables
 
-```bash
-npm run seed
+Create a `.env` file inside the `app` folder:
+
+```env
+GROQ_API_KEY=your_groq_api_key
+DATABASE_URL=your_neon_postgres_connection_string
 ```
 
-Start the development server:
+### Run
 
 ```bash
+cd app
 npm run dev
 ```
 
-Open http://localhost:3000 to view the app.
+Open [http://localhost:3000](http://localhost:3000).
+
+## Usage Examples
+
+```
+list all files in C:\Users\yourname\myproject
+
+read C:\Users\yourname\myproject\index.ts and explain what it does
+
+search for "useState" in C:\Users\yourname\myproject
+
+create a new file at C:\Users\yourname\myproject\utils\helper.ts with a function that formats dates
+
+run "npm test" in C:\Users\yourname\myproject
+```
 
 ## Project Structure
 
-- app/page.tsx: Main chat UI
-- app/api/chat/route.ts: Handles chat requests and retrieves relevant context
-- scripts/loadDb.ts: Scrapes content, splits it into chunks, creates embeddings, and stores them in Astra DB
-- app/components: Reusable chat UI components
-
-## Build
-
-To create a production build:
-
-```bash
-npm run build
+```
+app/
+├── api/
+│   └── chat/
+│       └── route.ts          # Next.js API route — runs the LangGraph agent
+├── components/
+│   ├── Bubble.tsx            # Chat message bubble
+│   ├── LoadingBubble.tsx     # Animated loading indicator
+│   ├── PromptSuggestionButton.tsx
+│   └── PromptSuggestionsRow.tsx
+├── lib/
+│   ├── agent.ts              # LangGraph StateGraph — ReAct loop
+│   ├── checkpointer.ts       # PostgreSQL memory setup
+│   └── tools.ts              # All filesystem + shell tools
+├── page.tsx                  # Main chat UI
+├── layout.tsx
+└── globals.css
 ```
 
-## Notes
+## Known Limitations
 
-- The seed script currently uses a small set of fitness-related pages and can be expanded with your own sources.
-- The app uses OpenAI embeddings and chat completions to generate responses grounded by retrieved context.
+- **Token limits** — Groq free tier has low TPM limits. Long conversations with large file reads can hit rate limits. Upgrade to Groq Dev tier or clear conversation history between sessions.
+- **Windows paths** — tested on Windows. Unix paths (`/home/user/...`) should work too but not extensively tested.
+- **No sandboxing** — tools execute real commands on your machine. Don't run untrusted prompts.
+
+## Roadmap
+
+- [ ] Message summarization to handle long conversations
+- [ ] Workspace folder UX — set a root directory once instead of typing full paths
+- [ ] Code review step before writing files
+- [ ] Web search tool for looking up docs
+- [ ] Support for multiple conversation threads
+
+## License
+
+MIT

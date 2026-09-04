@@ -6,7 +6,7 @@ import { allTools } from "./tools";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 
 const llm = new ChatGroq({
-  model: "llama-3.1-8b-instant",
+  model: "llama-3.1-8b-versatile",
   apiKey: process.env.GROQ_API_KEY,
 }).bindTools(allTools);
 
